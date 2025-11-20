@@ -1,0 +1,10 @@
+flask
+python-dotenv
+google-generativeai
+markdown
+Flask-SQLAlchemy
+Flask-Login
+Flask-WTF
+email_validator
+werkzeug
+

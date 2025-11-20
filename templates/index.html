@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="landing-wrapper">
+    <nav class="top-nav">
+        {% if current_user.is_authenticated %}
+        <span>Welcome, {{ current_user.username }}</span>
+        <a href="{{ url_for('history') }}">History</a>
+        <a href="{{ url_for('logout') }}">Logout</a>
+        {% else %}
+        <a href="{{ url_for('login') }}">Login</a>
+        <a href="{{ url_for('register') }}">Register</a>
+        {% endif %}
+    </nav>
+
+    <header>
+        <h1>The I Ching Oracle</h1>
+        <p class="subtitle">Consult the Book of Changes with AI Wisdom</p>
+    </header>
+
+    <main>
+        <div class="landing-card">
+            <p class="instruction-text">Focus on your question...</p>
+            <form method="POST" action="" class="question-form">
+                {{ form.hidden_tag() }}
+                <div class="input-group">
+                    {{ form.question(placeholder="What is on your mind?", autocomplete="off") }}
+                    <span class="highlight"></span>
+                    <span class="bar"></span>
+                </div>
+                <div class="input-group subject-group">
+                    {{ form.subject(placeholder="Subject (e.g. Career, Love)", autocomplete="off") }}
+                    <span class="highlight"></span>
+                    <span class="bar"></span>
+                </div>
+                <div class="input-group language-group">
+                    {{ form.language(class="language-select") }}
+                </div>
+                {% if form.question.errors %}
+                {% for error in form.question.errors %}
+                <p class="error-msg">{{ error }}</p>
+                {% endfor %}
+                {% endif %}
+                <button type="submit" class="cta-button">
+                    <span>Consult the Oracle</span>
+                    <div class="liquid"></div>
+                </button>
+            </form>
+        </div>
+    </main>
+</div>
+{% endblock %}

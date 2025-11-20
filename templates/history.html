@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="history-wrapper">
+    <header>
+        <a href="/" class="back-link">← New Consultation</a>
+        <h2>Your Journey</h2>
+    </header>
+
+    <div class="history-container">
+        {% for subject, consultations in history_data.items() %}
+        <div class="subject-section">
+            <h3 class="subject-title">{{ subject }}</h3>
+            <div class="consultation-grid">
+                {% for c in consultations %}
+                <a href="{{ url_for('consultation', id=c.id) }}" class="consultation-card">
+                    <div class="card-header">
+                        <span class="date">{{ c.timestamp.strftime('%Y-%m-%d') }}</span>
+                    </div>
+                    <p class="question-preview">"{{ c.question }}"</p>
+                    <div class="mini-hexagram">
+                        <!-- Simple visual representation if needed, or just text -->
+                        <span>Hexagram Reading</span>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% else %}
+        <p class="no-history">No consultations yet. <a href="/">Ask the Oracle.</a></p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

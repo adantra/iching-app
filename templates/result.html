@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="result-wrapper">
+    <header>
+        <nav class="top-nav">
+            <a href="{{ url_for('history') }}">History</a>
+            <a href="/" class="back-link">New Question</a>
+        </nav>
+        <h2>The Oracle Speaks</h2>
+        <p class="question-display">"{{ consultation.question if consultation else question }}"</p>
+        {% if consultation and consultation.subject %}
+        <p class="subject-display">Subject: {{ consultation.subject }}</p>
+        {% endif %}
+    </header>
+
+    <div class="hexagram-container">
+        <div class="hexagram">
+            <!-- Handle both direct session data and DB object data -->
+            {% set raw_values = consultation.get_hexagram_data().raw_values if consultation else cast_result.raw_values
+            %}
+
+            {% for val in raw_values|reverse %}
+            <div class="line {{ 'yang' if val % 2 != 0 else 'yin' }} {{ 'moving' if val == 6 or val == 9 else '' }}">
+                {% if val % 2 == 0 %}
+                <!-- Yin Line -->
+                <span class="segment"></span>
+                <span class="gap"></span>
+                <span class="segment"></span>
+                {% else %}
+                <!-- Yang Line -->
+                <span class="segment full"></span>
+                {% endif %}
+
+                {% if val == 6 %}
+                <span class="indicator">x</span>
+                {% elif val == 9 %}
+                <span class="indicator">o</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="interpretation">
+        <div class="content">
+            {{ consultation.interpretation|safe if consultation else interpretation|safe }}
+        </div>
+    </div>
+
+    {% if consultation %}
+    <div class="notes-section">
+        <h3>Your Notes</h3>
+        <form method="POST" action="">
+            {{ form.hidden_tag() }}
+            <div class="form-group">
+                {{ form.notes(class="notes-input", placeholder="Write your reflections here...") }}
+            </div>
+            <div class="form-actions">
+                {{ form.submit(class="cta-button small") }}
+            </div>
+        </form>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
