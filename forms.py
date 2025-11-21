@@ -17,6 +17,8 @@ class RegistrationForm(FlaskForm):
 class ConsultationForm(FlaskForm):
     question = StringField('Question', validators=[DataRequired()])
     subject = StringField('Subject', validators=[Length(max=50)])
+    situation = TextAreaField('Describe the Situation', validators=[Length(max=500)])
+    assessment = TextAreaField('Personal Assessment', validators=[Length(max=500)])
     language = SelectField('Language', choices=[('English', 'English'), ('Spanish', 'Spanish')], default='English')
     submit = SubmitField('Consult the Oracle')
 

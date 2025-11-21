@@ -24,10 +24,15 @@ class Consultation(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     question = db.Column(db.String(500), nullable=False)
     subject = db.Column(db.String(100), nullable=True)
-    hexagram_data = db.Column(db.Text, nullable=False) # Storing JSON string
-    interpretation = db.Column(db.Text, nullable=True)
-    notes = db.Column(db.Text, nullable=True)
-    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    hexagram_data = db.Column(db.Text, nullable=False) # JSON string of raw values
+    interpretation = db.Column(db.Text)
+    notes = db.Column(db.Text)
+    situation = db.Column(db.Text)
+    assessment = db.Column(db.Text)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<Consultation {self.id}: {self.question}>'
 
     def set_hexagram_data(self, data):
         self.hexagram_data = json.dumps(data)

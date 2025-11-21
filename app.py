@@ -7,6 +7,7 @@ from forms import LoginForm, RegistrationForm, ConsultationForm, NoteForm
 import os
 from dotenv import load_dotenv
 import markdown
+import json
 
 load_dotenv()
 
@@ -73,6 +74,8 @@ def index():
     if form.validate_on_submit():
         session['question'] = form.question.data
         session['subject'] = form.subject.data
+        session['situation'] = form.situation.data
+        session['assessment'] = form.assessment.data
         session['language'] = form.language.data
         return redirect(url_for('cast'))
     return render_template('index.html', form=form)
@@ -81,11 +84,19 @@ def index():
 @login_required
 def cast():
     question = session.get('question')
-    # subject and language are also in session
+    # subject, situation, assessment, language are also in session
     if not question:
         return redirect(url_for('index'))
     
     result = iching.cast_hexagram()
+    
+    # Get authoritative hexagram info
+    hex_info = iching.get_hexagram_info(result['hexagram'])
+    future_hex_info = iching.get_hexagram_info(result['future_hexagram'])
+    
+    result['hexagram_info'] = hex_info
+    result['future_hexagram_info'] = future_hex_info
+    
     session['cast_result'] = result
     
     return redirect(url_for('result'))
@@ -95,6 +106,8 @@ def cast():
 def result():
     question = session.get('question')
     subject = session.get('subject')
+    situation = session.get('situation')
+    assessment = session.get('assessment')
     language = session.get('language', 'English')
     cast_result = session.get('cast_result')
     
@@ -107,7 +120,13 @@ def result():
             # Check if we already have an interpretation in session to avoid re-generating on refresh
             # Ideally, we should save to DB immediately.
             # Let's generate if not present.
-            raw_interpretation = llm_service.interpret_hexagram(question, cast_result, language)
+            raw_interpretation = llm_service.interpret_hexagram(
+                question, 
+                cast_result, 
+                language=language,
+                situation=situation,
+                assessment=assessment
+            )
             interpretation = markdown.markdown(raw_interpretation)
             
             # Save to DB
@@ -115,15 +134,20 @@ def result():
                 author=current_user,
                 question=question,
                 subject=subject,
-                interpretation=interpretation
+                situation=situation,
+                assessment=assessment,
+                interpretation=interpretation,
+                hexagram_data=json.dumps(cast_result)
             )
-            consultation.set_hexagram_data(cast_result)
             db.session.add(consultation)
             db.session.commit()
             
             # Clear session data to prevent re-submission
             session.pop('question', None)
             session.pop('subject', None)
+            session.pop('situation', None)
+            session.pop('assessment', None)
+            session.pop('language', None)
             session.pop('cast_result', None)
             
             # Redirect to the consultation detail view to show the result

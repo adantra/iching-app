@@ -12,12 +12,12 @@ class LLMService:
         self.model_name = 'gemini-2.0-flash-exp'
         self.model = genai.GenerativeModel(self.model_name)
 
-    def interpret_hexagram(self, question, cast_result, language='English'):
+    def interpret_hexagram(self, question, cast_result, language='English', situation=None, assessment=None):
         """
         Sends the cast result and user question to the LLM for interpretation.
         """
         try:
-            return self._generate(question, cast_result, language)
+            return self._generate(question, cast_result, language, situation, assessment)
         except Exception as e:
             # ... (fallback logic remains similar, just passing language)
             # For brevity in this edit, assuming fallback also needs update or we just update _generate
@@ -27,10 +27,10 @@ class LLMService:
                 print(f"Model {self.model_name} failed, trying {fallback}. Error: {e}")
                 self.model_name = fallback
                 self.model = genai.GenerativeModel(fallback)
-                return self._generate(question, cast_result, language)
+                return self._generate(question, cast_result, language, situation, assessment)
             raise e
 
-    def _generate(self, question, cast_result, language):
+    def _generate(self, question, cast_result, language, situation=None, assessment=None):
         
         # ... (lines processing code)
         
@@ -55,22 +55,41 @@ class LLMService:
         lines_text = "\n".join([f"Line {i+1}: {desc}" for i, desc in enumerate(lines_desc)])
         
         moving_lines_text = "\n".join(moving_lines) if moving_lines else "None"
+        
+        # Get authoritative info if available (it should be)
+        hex_info = cast_result.get('hexagram_info', {})
+        future_hex_info = cast_result.get('future_hexagram_info', {})
+        
+        primary_hex_str = f"Hexagram {hex_info.get('number', '?')}: {hex_info.get('name', 'Unknown')} {hex_info.get('character', '')}"
+        future_hex_str = f"Hexagram {future_hex_info.get('number', '?')}: {future_hex_info.get('name', 'Unknown')} {future_hex_info.get('character', '')}"
+
+        # Build context string
+        context_str = ""
+        if situation:
+            context_str += f"\nUser's Description of the Situation:\n{situation}\n"
+        if assessment:
+            context_str += f"\nUser's Personal Assessment:\n{assessment}\n"
 
         prompt = f"""
         You are an expert I Ching master and philosopher. 
         A user has asked the following question: "{question}"
+        {context_str}
         
         They have cast the following hexagram (lines are listed from bottom to top):
         {lines_text}
+        
+        **Authoritative Hexagram Identification:**
+        - Primary Hexagram: {primary_hex_str}
+        - Relating (Future) Hexagram: {future_hex_str} (if applicable)
         
         Summary of Moving Lines:
         {moving_lines_text}
         
         Please provide a profound and helpful interpretation in {language}. 
-        1. Identify the Primary Hexagram.
+        1. Start with the Primary Hexagram Name and Symbol as provided above.
         2. Identify any Moving Lines and their specific meaning (Only interpret the lines listed in the Summary of Moving Lines).
         3. Identify the Relating (Future) Hexagram if there are moving lines.
-        4. Synthesize the answer to directly address the user's question.
+        4. Synthesize the answer to directly address the user's question and their specific situation/assessment.
         
         Format the output with clear Markdown headings. Use a wise, calming, and insightful tone.
         """

@@ -134,6 +134,29 @@ textarea {
     text-align: center;
 }
 
+.context-group {
+    width: 100%;
+}
+
+.context-input {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1rem;
+    background: var(--input-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    color: var(--text-color);
+    outline: none;
+    min-height: 80px;
+    resize: vertical;
+    font-family: 'Lato', sans-serif;
+}
+
+.context-input:focus {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+}
+
 .language-select {
     width: 100%;
     padding: 0.8rem;
